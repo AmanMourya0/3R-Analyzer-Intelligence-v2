@@ -124,9 +124,20 @@ class AIClusterNamer:
             from keybert import KeyBERT
             from sentence_transformers import SentenceTransformer
             from app.config.settings import settings
+            from pathlib import Path
 
-            logger.info("Loading KeyBERT model: %s", settings.EMBEDDING_MODEL)
-            st_model = SentenceTransformer(settings.EMBEDDING_MODEL)
+            model_path_str = settings.EMBEDDING_MODEL_PATH
+            model_path = Path(model_path_str).resolve()
+
+            logger.info("Loading KeyBERT model locally from: %s", model_path)
+
+            if not model_path.exists() or not model_path.is_dir():
+                raise RuntimeError(f"Local model not found for AI Cluster Naming: {model_path}")
+
+            st_model = SentenceTransformer(
+                str(model_path),
+                local_files_only=settings.EMBEDDING_MODEL_LOCAL_ONLY
+            )
             self._kw_model = KeyBERT(model=st_model)
             self._available = True
             logger.info("KeyBERT model loaded for AI enrichment.")

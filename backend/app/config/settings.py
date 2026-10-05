@@ -8,6 +8,11 @@ Project: 3R Analyzer Intelligence
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 from typing import List
+from pathlib import Path
+import os
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+DEFAULT_MODEL_PATH = str(BACKEND_DIR / "app" / "3r models" / "models" / "all-MiniLM-L6-v2")
 
 class Settings(BaseSettings):
     # App config
@@ -29,6 +34,8 @@ class Settings(BaseSettings):
 
     # ML Configuration
     EMBEDDING_MODEL: str = Field(default="all-MiniLM-L6-v2")
+    EMBEDDING_MODEL_PATH: str = Field(default=DEFAULT_MODEL_PATH)
+    EMBEDDING_MODEL_LOCAL_ONLY: bool = Field(default=True)
     EMBEDDING_BATCH_SIZE: int = Field(default=512)
     
     # HDBSCAN Configuration

@@ -35,14 +35,15 @@ def test_cooperative_cancellation_during_embedding():
             generator.generate_embeddings(texts, check_cancellation=mock_cancelled_check)
             
         # Total texts = 5, Batch size = 2
+        # Init: encode called (1) to validate dimension
         # Batch 1: check (0 < 2 -> ok), processed = 1
-        # encode called (1)
-        # Batch 2: check (1 < 2 -> ok), processed = 2
         # encode called (2)
+        # Batch 2: check (1 < 2 -> ok), processed = 2
+        # encode called (3)
         # Batch 3: check (2 >= 2 -> raise!)
         # encode never called for batch 3
         
-        assert mock_model.encode.call_count == 2
+        assert mock_model.encode.call_count == 3
 
 def test_cancellation_telemetry_and_status():
     from app.services.performance.stage_timer import stage_timer, PipelineProfiler

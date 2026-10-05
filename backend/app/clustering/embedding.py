@@ -15,6 +15,7 @@ from typing import List, Optional, Callable
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from pathlib import Path
 from app.config.settings import settings
 from app.utils.logger import logger
 
@@ -34,18 +35,37 @@ class SemanticEmbeddingGenerator(EmbeddingInterface):
         during object creation and reuse it.
         """
         try:
+            logger.info("Loading Sentence Transformer model locally...")
+            
+            model_path_str = settings.EMBEDDING_MODEL_PATH
+            model_path = Path(model_path_str).resolve()
+            
+            if not model_path.exists():
+                raise RuntimeError(f"Embedding model not found at: {model_path}")
+                
+            if not model_path.is_dir():
+                raise RuntimeError(f"Embedding model path is not a directory: {model_path}")
+                
+            required_files = ["config.json", "model.safetensors"]
+            for req_file in required_files:
+                if not (model_path / req_file).exists():
+                    raise RuntimeError(f"Required model file missing: {req_file} in {model_path}")
 
-            logger.info("Loading Sentence Transformer model...")
+            self.model = SentenceTransformer(
+                str(model_path),
+                local_files_only=settings.EMBEDDING_MODEL_LOCAL_ONLY
+            )
+            
+            # Validate embedding dimension
+            test_embedding = self.model.encode(["test"], convert_to_numpy=True)
+            if test_embedding.shape[1] != 384:
+                raise RuntimeError(f"Invalid embedding dimension. Expected 384, got {test_embedding.shape[1]}")
 
-            self.model = SentenceTransformer(settings.EMBEDDING_MODEL)
+            logger.info("Embedding model loaded successfully from %s", model_path)
 
-            logger.info("Embedding model loaded successfully.")
-
-        except Exception:
-
+        except Exception as e:
             logger.exception("Failed to load embedding model.")
-
-            raise
+            raise RuntimeError(f"Failed to load local embedding model: {str(e)}") from e
 
     def generate_embeddings(
         self,

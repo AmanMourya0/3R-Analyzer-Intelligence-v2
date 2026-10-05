@@ -4,7 +4,7 @@ This document outlines the infrastructure required for the eventual Phase 4 prod
 
 ## Infrastructure Requirements
 * **Database**: Managed PostgreSQL instance (e.g., AWS RDS, Azure Postgres).
-* **Backend Compute**: 4+ vCPU, 8GB+ RAM required for the AI embedding models. Containerization (Docker) is recommended.
+* **Backend Compute**: 4+ vCPU, 8GB+ RAM required for the AI embedding models. Containerization (Docker) is recommended. The embedding model is packaged locally and runs entirely offline without runtime dependencies on Hugging Face.
 * **Frontend Hosting**: Static web host (e.g., Nginx, Vercel, AWS S3+CloudFront).
 
 ## Monitoring

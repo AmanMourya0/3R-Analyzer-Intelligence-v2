@@ -234,3 +234,30 @@ def test_keybert_failure_keeps_simple_names(mock_get_kw_model):
     assert job.status == JOB_STATUS_FAILED
     assert "Failed to load KeyBERT" in job.error_message
     session.close()
+
+# =======================================================================
+# Test 11: AI Enrichment uses local model exclusively
+# =======================================================================
+
+@patch('sentence_transformers.SentenceTransformer')
+@patch('keybert.KeyBERT')
+def test_keybert_uses_local_model(mock_keybert, mock_st):
+    """Test 11: KeyBERT uses the locally configured model and offline settings."""
+    from app.clustering.cluster_namer import AIClusterNamer
+    from app.config.settings import settings
+    from pathlib import Path
+    
+    # Needs to be a valid path to pass the exists/is_dir check
+    with patch("pathlib.Path.exists", return_value=True):
+        with patch("pathlib.Path.is_dir", return_value=True):
+            namer = AIClusterNamer()
+            namer._get_kw_model()
+            
+            mock_st.assert_called_once()
+            
+            args, kwargs = mock_st.call_args
+            assert str(Path(settings.EMBEDDING_MODEL_PATH).resolve()) == args[0]
+            assert kwargs.get("local_files_only") == True
+            
+            mock_keybert.assert_called_once_with(model=mock_st.return_value)
+
