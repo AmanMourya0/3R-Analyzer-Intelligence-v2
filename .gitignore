@@ -36,8 +36,5 @@ Thumbs.db
 *.log
 
 # ML model artifacts
-*.pt
-*.pth
-*.onnx
-*.bin
-*.safetensors
+# Intentionally NOT ignored because the offline 3R Analyzer model
+# is distributed with the application.
